@@ -348,7 +348,9 @@ import Layout from '../layouts/Layout.astro';
 
 		const camerasContainer = document.getElementById('camerasContainer');
 		// const div = document.body.appendChild(cameraDiv);
+		// @ts-ignore
 		const cameraCardInstance: any = new CameraCard({
+			// @ts-ignore
 			target: camerasContainer,
 			props: {
 				cameraConfig: cameraOptions,
@@ -484,7 +486,7 @@ import Layout from '../layouts/Layout.astro';
 		} else {
 			event.target.setAttribute('isPlaying', true);
 			event.target.innerText = `Pause Camera`;
-			console.log(`Selected Camera is ${config.deviceId}`);
+			console.log(`Selected Camera is ${config?.deviceId}`);
 			await startCamera(
 				cameraId,
 				document.getElementById(`video-camera-${cameraId}`) as HTMLVideoElement,

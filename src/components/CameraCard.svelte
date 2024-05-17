@@ -1,4 +1,5 @@
 <script lang="ts">
+  // @ts-ignore
   import {
     getCameraConfigByCameraId,
     removeCameraConfig,
@@ -17,7 +18,8 @@
     const isPlaying =
       event.target.getAttribute('data-isplaying')?.toLowerCase() === 'true';
     const cameraId = event.target.getAttribute('data-cameraid');
-    const config: ICameraConfig = getCameraConfigByCameraId(cameraId) || {};
+    const config: ICameraConfig | {} =
+      getCameraConfigByCameraId(cameraId) || {};
     console.log('config', config);
     console.log(`Camera ID ${cameraId} isPlaying: ${isPlaying}`);
     const textOverlay = document.getElementById(
@@ -34,6 +36,7 @@
     } else {
       event.target.setAttribute('data-isplaying', true);
       event.target.innerText = `Pause Camera`;
+      // @ts-ignore
       console.log(`Selected Camera is ${config.deviceId}`);
       await startCamera(
         cameraId,
@@ -155,15 +158,17 @@
                 type="text"
                 data-cameraid={cameraConfig.deviceId}
                 on:change={(event) => {
-                  // @ts-ignore
+                  if (
+                    !event.target ||
+                    !(event.target instanceof HTMLInputElement)
+                  )
+                    return;
                   const cameraId =
                     event.target.getAttribute('data-cameraid') || '';
                   const cameraConfig = getCameraConfigByCameraId(cameraId);
-                  // @ts-ignore
-                  cameraConfig.yawThreshold = parseFloat(event.target?.value);
-                  if (cameraConfig) {
-                    updateCameraConfig(cameraConfig);
-                  }
+                  if (!cameraConfig) return;
+                  cameraConfig.yawThreshold = parseFloat(event.target.value);
+                  updateCameraConfig(cameraConfig);
                 }}
               />
             </div>
@@ -177,15 +182,17 @@
                 type="text"
                 data-cameraid={cameraConfig.deviceId}
                 on:change={(event) => {
-                  // @ts-ignore
+                  if (
+                    !event.target ||
+                    !(event.target instanceof HTMLInputElement)
+                  )
+                    return;
                   const cameraId =
-                    event.target.getAttribute('data-cameraid') || '';
+                    event.target?.getAttribute('data-cameraid') || '';
                   const cameraConfig = getCameraConfigByCameraId(cameraId);
-                  // @ts-ignore
-                  cameraConfig.pitchThreshold = parseFloat(event.target?.value);
-                  if (cameraConfig) {
-                    updateCameraConfig(cameraConfig);
-                  }
+                  if (!cameraConfig) return;
+                  cameraConfig.pitchThreshold = parseFloat(event.target.value);
+                  updateCameraConfig(cameraConfig);
                 }}
               />
             </div>
@@ -199,15 +206,17 @@
                 type="text"
                 data-cameraid={cameraConfig.deviceId}
                 on:change={(event) => {
-                  // @ts-ignore
+                  if (
+                    !event.target ||
+                    !(event.target instanceof HTMLInputElement)
+                  )
+                    return;
                   const cameraId =
                     event.target.getAttribute('data-cameraid') || '';
                   const cameraConfig = getCameraConfigByCameraId(cameraId);
-                  // @ts-ignore
+                  if (!cameraConfig) return;
                   cameraConfig.liveThreshold = parseFloat(event.target?.value);
-                  if (cameraConfig) {
-                    updateCameraConfig(cameraConfig);
-                  }
+                  updateCameraConfig(cameraConfig);
                 }}
               />
             </div>
@@ -221,17 +230,19 @@
                 type="text"
                 data-cameraid={cameraConfig.deviceId}
                 on:change={(event) => {
-                  // @ts-ignore
+                  if (
+                    !event.target ||
+                    !(event.target instanceof HTMLInputElement)
+                  )
+                    return;
                   const cameraId =
                     event.target.getAttribute('data-cameraid') || '';
                   const cameraConfig = getCameraConfigByCameraId(cameraId);
-                  // @ts-ignore
+                  if (!cameraConfig) return;
                   cameraConfig.faceScoreThreshold = parseFloat(
-                    event.target?.value,
+                    event.target.value,
                   );
-                  if (cameraConfig) {
-                    updateCameraConfig(cameraConfig);
-                  }
+                  updateCameraConfig(cameraConfig);
                 }}
               />
             </div>
@@ -245,20 +256,18 @@
                 type="text"
                 data-cameraid={cameraConfig.deviceId}
                 on:change={(event) => {
-                  console.log('Frame delay changed');
-                  console.dir(event);
-                  // @ts-ignore
+                  if (
+                    !event.target ||
+                    !(event.target instanceof HTMLInputElement)
+                  )
+                    return;
                   const cameraId =
                     event.target.getAttribute('data-cameraid') || '';
-                  console.log('Camera ID', cameraId);
                   const cameraConfig = getCameraConfigByCameraId(cameraId);
-                  // @ts-ignore
-                  cameraConfig.faceDetectionFramesThreshold = parseFloat(
-                    event.target?.value,
-                  );
-                  if (cameraConfig) {
-                    updateCameraConfig(cameraConfig);
-                  }
+                  if (!cameraConfig) return;
+                  cameraConfig.faceDetectionFramesThreshold =
+                    event.target.valueAsNumber;
+                  updateCameraConfig(cameraConfig);
                 }}
               />
             </div>

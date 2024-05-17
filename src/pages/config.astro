@@ -148,6 +148,7 @@ import Layout from '../layouts/Layout.astro';
       const sceneSelector = event.target as HTMLSelectElement;
       const selectedScene = sceneSelector.value;
       let cameraToUpdate = getCameraConfigByCameraId(cameraConfig.deviceId);
+      if (!cameraToUpdate) return;
       cameraToUpdate.sceneName = selectedScene;
       updateCameraConfig(cameraToUpdate);
     }

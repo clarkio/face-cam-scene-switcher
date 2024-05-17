@@ -18,7 +18,9 @@ export function getAllCameraConfigs() {
 
 export function getCameraConfigByCameraId(cameraId: string): ICameraConfig | undefined {
   const cameraConfigs = getAllCameraConfigs();
-  return cameraConfigs.find((config: ICameraConfig) => config.deviceId === cameraId);
+  const result = cameraConfigs.find((config: ICameraConfig) => config.deviceId === cameraId);
+  if (!result) console.warn(`A camera config was not found for camera ID: ${cameraId}`);
+  return result;
 }
 
 export function addCameraConfigToStorage(cameraConfig: ICameraConfig) {
@@ -33,7 +35,8 @@ export function removeCameraConfig(cameraId: string) {
   localStorage.setItem('cameraConfigs', JSON.stringify(updatedCameraConfigs));
 }
 
-export function updateCameraConfig(cameraConfig: ICameraConfig) {
+export function updateCameraConfig(cameraConfig: ICameraConfig | undefined) {
+  if (!cameraConfig) return;
   const cameraConfigs = getAllCameraConfigs();
   const updatedCameraConfigs = cameraConfigs.map((config: ICameraConfig) => {
     if (config.deviceId === cameraConfig.deviceId) {
