@@ -17,8 +17,7 @@
     const isPlaying =
       event.target.getAttribute('data-isplaying')?.toLowerCase() === 'true';
     const cameraId = event.target.getAttribute('data-cameraid');
-    const config: ICameraConfig | {} =
-      getCameraConfigByCameraId(cameraId) || {};
+    const config: ICameraConfig = getCameraConfigByCameraId(cameraId) || {};
     console.log('config', config);
     console.log(`Camera ID ${cameraId} isPlaying: ${isPlaying}`);
     const textOverlay = document.getElementById(
