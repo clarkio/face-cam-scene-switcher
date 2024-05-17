@@ -1,0 +1,160 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title='Config - Face Cam Scene Switcher'>
+  <div class='text-white'>
+    <a class='text-white underline visited:text-purple-600' href='../../'
+      >Back to All Stream Tools</a
+    >
+    <h1 class='text-2xl font-bold'>
+      OBS Camera Face Detection - Configuration
+    </h1>
+    <a class='text-white underline visited:text-purple-600' href='../'>Back</a>
+    <h2 class='text-xl font-bold'>OBS Websocket Configuration:</h2>
+    <form id='obsConfigForm'>
+      <label for='address'>OBS Websocket Address:</label>
+      <input
+        type='text'
+        id='address'
+        class='text-black px-2'
+        name='address'
+        value='localhost'
+        required
+      /><br /><br />
+      <label for='port'>OBS Websocket Port:</label>
+      <input
+        class='text-black px-2'
+        type='text'
+        id='port'
+        name='port'
+        value='4455'
+        required
+      /><br /><br />
+      <label for='password'>OBS Websocket Password:</label>
+      <input
+        class='text-black px-2'
+        type='password'
+        id='password'
+        name='password'
+        required
+      /><br /><br />
+    </form>
+    <button
+      class='rounded bg-sky-500 px-4 py-2 font-bold text-white hover:bg-sky-700'
+      id='saveObsConfigFormButton'>Save</button
+    >
+    <h2 class='text-xl font-bold'>Camera Configurations:</h2>
+    <button
+      class='rounded bg-sky-500 px-4 py-2 font-bold text-white hover:bg-sky-700'
+      id='updateSceneOptionsButton'>Update Scene Options</button
+    >
+    <br /><br />
+    <div id='cameraConfigs'></div>
+  </div>
+</Layout>
+<script>
+  import { connect, getAllScenes, getIsConnected } from '../scripts/obs';
+  import {
+    getAllCameraConfigs,
+    getCameraConfigByCameraId,
+    updateCameraConfig,
+    type ICameraConfig,
+  } from '../scripts/camera-config';
+
+  let allScenes: string[] = [];
+
+  // Function to handle form submission
+  function handleObsConfigSave(_event: Event) {
+    // Get form values
+    const form = document.getElementById('obsConfigForm');
+    const inputs = form?.querySelectorAll('input');
+    let values: { [key: string]: string } = {};
+
+    inputs?.forEach((input) => {
+      values[input.name] = input.value;
+    });
+
+    // Store form values in localStorage
+    localStorage.setItem('obsConfig', JSON.stringify(values));
+
+    // Display success message
+    console.log('OBS configuration values were stored in localStorage');
+  }
+
+  async function handleUpdateScenes() {
+    try {
+      if (!getIsConnected()) await connect();
+      allScenes = await getAllScenes();
+      console.log('Successfully retrieved latest scenes from OBS');
+    } catch (error) {
+      console.error('Error retrieving scenes from OBS:', error);
+    }
+  }
+
+  await handleUpdateScenes();
+
+  const updateSceneOptionsButton = document.getElementById(
+    'updateSceneOptionsButton',
+  ) as HTMLButtonElement;
+  updateSceneOptionsButton.addEventListener('click', handleUpdateScenes);
+
+  const obsConfigFormSaveButton = document.getElementById(
+    'saveObsConfigFormButton',
+  ) as HTMLButtonElement;
+  obsConfigFormSaveButton.addEventListener('click', handleObsConfigSave);
+
+  const obsConfigValue = localStorage.getItem('obsConfig');
+
+  if (obsConfigValue) {
+    const obsConfig = JSON.parse(obsConfigValue);
+    // @ts-ignore
+    document.getElementById('address').value = obsConfig.address;
+    // @ts-ignore
+    document.getElementById('port').value = obsConfig.port;
+    // @ts-ignore
+    document.getElementById('password').value = obsConfig.password;
+  }
+
+  const cameraConfigs = getAllCameraConfigs();
+  cameraConfigs.forEach((cameraConfig: ICameraConfig) => {
+    addCameraConfigDiv(cameraConfig);
+  });
+
+  function generateSceneOptions(scenes: string[], selectedScene: string) {
+    let options = '';
+    scenes.forEach((scene: string) => {
+      options += `<option value="${scene}" ${scene === selectedScene ? 'selected' : ''}>${scene}</option>`;
+    });
+    return options;
+  }
+
+  function addCameraConfigDiv(cameraConfig: ICameraConfig) {
+    const cameraConfigDiv = document.createElement('div');
+    cameraConfigDiv.innerHTML = `
+      <input type="hidden" id="cameraId" name="cameraId" value="${cameraConfig.deviceId}">
+      <label>For Camera:</label>
+      <label name="name">${cameraConfig.name}</label> -->
+      <label>Use Scene:</label>
+      <select id="selectFor-${cameraConfigs.deviceId}" class="rounded px-4 py-2 font-bold text-black" name="sceneName">
+        ${generateSceneOptions(allScenes, cameraConfig.sceneName || '')}
+      </select>
+  `;
+    const sceneNameSelect = cameraConfigDiv.querySelector(
+      `#selectFor-${cameraConfigs.deviceId}`,
+    ) as HTMLSelectElement;
+    sceneNameSelect.addEventListener('change', handleSceneNameChange);
+    function handleSceneNameChange(event: Event) {
+      const sceneSelector = event.target as HTMLSelectElement;
+      const selectedScene = sceneSelector.value;
+      let cameraToUpdate = getCameraConfigByCameraId(cameraConfig.deviceId);
+      cameraToUpdate.sceneName = selectedScene;
+      updateCameraConfig(cameraToUpdate);
+    }
+
+    const cameraConfigsDiv = document.getElementById(
+      'cameraConfigs',
+    ) as HTMLDivElement;
+    cameraConfigsDiv?.appendChild(cameraConfigDiv);
+  }
+</script>
